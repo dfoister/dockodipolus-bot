@@ -9,6 +9,9 @@ import {
   EmbedBuilder,
 } from 'discord.js';
 
+process.on('unhandledRejection', console.error);
+process.on('uncaughtException', console.error);
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
@@ -19,11 +22,6 @@ const commands = [
     .setDescription('Get matches'),
 ].map(command => command.toJSON());
 
-/*
-|--------------------------------------------------------------------------
-| Register slash commands
-|--------------------------------------------------------------------------
-*/
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
@@ -34,21 +32,11 @@ await rest.put(
 
 console.log('Commands registered');
 
-/*
-|--------------------------------------------------------------------------
-| Bot ready
-|--------------------------------------------------------------------------
-*/
 
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Slash command handling
-|--------------------------------------------------------------------------
-*/
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
