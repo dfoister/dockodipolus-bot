@@ -142,14 +142,65 @@ client.on('interactionCreate', async interaction => {
 
     const matchId = interaction.options.getString('match_id');
 
-    try {
+    var response  = await fetch(`https://open.faceit.com/data/v4/matches/${matchId}`, {headers: {'Authorization': `Bearer ${process.env.FACEIT_API_KEY}`}}) 
+    const matchData = await response.json();
 
-      const result = await pool.query('SELECT NOW()');
-      console.log(result.rows);
-    } catch (err) {
-      console.error(err);
+    response = await fetch(`https://open.faceit.com/data/v4/matches/${matchId}/stats`, {headers: {'Authorization': `Bearer ${process.env.FACEIT_API_KEY}`}})
+    const data = await response.json();
+    const match = data.rounds[0];
+
+    const rounds = match.round_stats["Rounds"];
+
+    await pool.query(`
+    INSERT INTO matches (
+      match_id,
+      match_data,
+      uploaded_at,
+      team_a,
+      team_a_score,
+      team_b,
+      team_b_score,
+      map,
+      demo_link,
+      match_date
+    )
+    VALUES ($1,$2,NOW(),$3,$4,$5,$6,$7,$8,$9)`,[
+      matchId,
+      match,
+      match.teams[0].team_stats["Team"],
+      match.teams[0].team_stats["Final Score"],
+      match.teams[1].team_stats["Team"],
+      match.teams[1].team_stats["Final Score"],
+      match.round_stats["Map"],
+      matchData.demo_url[0],
+      new Date(match.started_at),
+    ]);
+
+
+    const teamIndex = teamA == "Dockodipolus" ? 0 : 1;
+    const playerData = match.teams[teamIndex].players;
+
+
+    for(const player of playerData){
+      await pool.query(`
+        UPDATE player_stats
+        SET
+          kills = kills + $1,
+          deaths = deaths + $2,
+          assists = assists + $3,
+          damage = damage + $4,
+          total_rounds = total_rounds + $5
+        WHERE player_id = $6`,
+        [
+          player["Kills"],
+          player["Deaths"],
+          player["Assists"],
+          player["Damage"],
+          rounds,
+          player.player_id,
+        ]
+      );
     }
-
 
     await interaction.reply({
         content: 'Match uploaded',
