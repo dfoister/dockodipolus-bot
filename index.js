@@ -150,6 +150,7 @@ client.on('interactionCreate', async interaction => {
     const match = data.rounds[0];
 
     const rounds = match.round_stats["Rounds"];
+    const teamA = match.teams[0].team_stats["Team"];
 
     await pool.query(`
     INSERT INTO matches (
@@ -167,7 +168,7 @@ client.on('interactionCreate', async interaction => {
     VALUES ($1,$2,NOW(),$3,$4,$5,$6,$7,$8,$9)`,[
       matchId,
       match,
-      match.teams[0].team_stats["Team"],
+      teamA,
       match.teams[0].team_stats["Final Score"],
       match.teams[1].team_stats["Team"],
       match.teams[1].team_stats["Final Score"],
