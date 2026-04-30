@@ -193,10 +193,10 @@ client.on('interactionCreate', async interaction => {
           total_rounds = total_rounds + $5
         WHERE player_id = $6`,
         [
-          player["Kills"],
-          player["Deaths"],
-          player["Assists"],
-          player["Damage"],
+          player.player_stats["Kills"],
+          player.player_stats["Deaths"],
+          player.player_stats["Assists"],
+          player.player_stats["Damage"],
           rounds,
           player.player_id,
         ]
