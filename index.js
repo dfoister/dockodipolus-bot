@@ -174,7 +174,7 @@ client.on('interactionCreate', async interaction => {
       match.teams[1].team_stats["Final Score"],
       match.round_stats["Map"],
       matchData.demo_url[0],
-      new Date(matchData.started_at)
+      new Date(matchData.started_at * 1000)
     ]);
 
 
