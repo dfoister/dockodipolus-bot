@@ -1,5 +1,5 @@
 import 'dotenv/config';
-
+import { pool } from './db.js';
 import {
   Client,
   GatewayIntentBits,
@@ -12,6 +12,10 @@ import {
 process.on('unhandledRejection', console.error);
 process.on('uncaughtException', console.error);
 
+const ADMIN_USERS = [
+  '897193606866169927'
+];
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
@@ -23,6 +27,15 @@ const commands = [
   new SlashCommandBuilder()
     .setName('standings')
     .setDescription('See current standings'),
+  new SlashCommandBuilder()
+    .setName('upload-match')
+    .setDescription('Upload FACEIT match')
+    .addStringOption(option =>
+      option
+        .setName('match_id')
+        .setDescription('FACEIT match ID')
+        .setRequired(true)
+    )
 ].map(command => command.toJSON());
 
 
@@ -39,7 +52,6 @@ console.log('Commands registered');
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
-
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
@@ -116,6 +128,33 @@ client.on('interactionCreate', async interaction => {
   await interaction.reply({
     embeds: [embed],
   });
+  }
+
+  if (interaction.commandName === 'upload-match') {
+
+    if (!ADMIN_USERS.includes(interaction.user.id)) {
+
+      return interaction.reply({
+        content: 'You are not allowed to use this command.',
+        ephemeral: true,
+      });
+    }
+
+    const matchId = interaction.options.getString('match_id');
+
+    try {
+
+      const result = await pool.query('SELECT NOW()');
+      console.log(result.rows);
+    } catch (err) {
+      console.error(err);
+    }
+
+
+    await interaction.reply({
+        content: 'Match uploaded',
+        ephemeral: true,
+      });
   }
 });
 
