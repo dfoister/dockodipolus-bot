@@ -135,7 +135,7 @@ client.on('interactionCreate', async interaction => {
     if (!ADMIN_USERS.includes(interaction.user.id)) {
 
       return interaction.reply({
-        content: 'You are not allowed to use this command.',
+        content: 'If you try to use this command again, I will do horrible things to you',
         ephemeral: true,
       });
     }
